@@ -1,0 +1,1 @@
+Uses font header files - as found in LEDText - to generate binary arrays for mLED Matrix Displays (like WS2812B) - which take simple on/off clocked signals. Useful for using Python (maybe CircuitPy?) for displaying scrolling text on a standard set of LED Strips
