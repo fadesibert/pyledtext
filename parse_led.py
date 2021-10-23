@@ -67,7 +67,7 @@ def string_to_matrix(input: str):
     return char_buffer
 
 
-def matrix_to_pixels(matrix: numpy.matrix, default_color=(255, 0, 0)):
+def matrix_to_pixels(matrix: numpy.matrix, color:GRB_Pixel = GRB_Pixel(255,0,0):
     pass
 
 
