@@ -79,8 +79,14 @@ def matrix_to_pixels(
     foreground: GRB_Pixel = GRB_Pixel(255, 0, 0),
 ):
     transformed_type = matrix.astype("i8,i8,i8")
-    transformed_type[transformed_type == (1, 1, 1)] = foreground
-    return transformed_type
+    ravelled = transformed_type.ravel()
+    with numpy.nditer(ravelled, op_flags=["readwrite"]) as nd:
+        for x in nd:
+            if (x.item()) == (1, 1, 1):
+                x[...] = tuple(foreground.__list__())
+
+    breakpoint()
+    return ravelled.reshape(transformed_type.shape)
 
 
 if __name__ == "__main__":
