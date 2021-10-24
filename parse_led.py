@@ -1,4 +1,6 @@
+import time
 from dataclasses import dataclass, fields
+from enum import Enum
 
 import numpy
 
@@ -9,6 +11,13 @@ class PixelRangeError(Exception):
     def __init__(self, name, value):
         message = f"{name} not between 0 and 255: {value}"
         super().__init__(self, message)
+
+
+class ScrollDirection(Enum):
+    LEFT = 1
+    RIGHT = -1
+
+    # Up, Down not supported
 
 
 @dataclass
@@ -93,12 +102,32 @@ def matrix_rewrite_serpentine(input: numpy.matrix) -> numpy.matrix:
     return input
 
 
+def scroll_text(
+    message: str,
+    LED_WIDTH: int,
+    LED_HEIGHT: int,
+    scroll_direction: ScrollDirection,
+    scroll_speed: int = 20,
+    serpentine: bool = True,
+):
+    matrix = matrix_to_pixels(string_to_matrix(message))
+    message_height, message_width = matrix.shape
+    breakpoint()
+    buffer_width = LED_WIDTH * 2
+    filler_width = buffer_width - message_width
+    zeroes = numpy.asmatrix(numpy.full((message_height, filler_width), 0, dtype="i8,i8,i8"))
+    filled_matrix = numpy.concatenate((matrix.T, zeroes.T)).T
+
+    # Scrolling
+    for i in range(-message_width, message_width):
+        display = numpy.roll(filled_matrix, i)[:, 0:LED_WIDTH]
+        # replace this with a neopixel call - or buffer this since we have the memory on a pi?
+        print(display)
+        time.sleep(1 / scroll_speed)
+
+
 if __name__ == "__main__":
     fn = "FontMatrise.h"
     CHAR_MAP = translate_header_file(fn)
     hw = "Hello, World"
-    mat = string_to_matrix(hw)
-    pix = matrix_to_pixels(mat)
-    pixs = matrix_rewrite_serpentine(pix)
-    print(pixs)
-
+    scroll_text(hw, 96, 8, ScrollDirection.LEFT, 20, False)
