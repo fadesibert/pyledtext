@@ -85,9 +85,7 @@ def char_to_matrix(char: chr) -> numpy.matrix:
 def string_to_matrix(input: str):
     characters = [char_to_matrix(x) for x in input]
     char_buffer = numpy.concatenate(characters, 1)
-    zero_row = numpy.zeros(char_buffer.shape[1], dtype=int)
-    with_bottom_row = numpy.row_stack((char_buffer, zero_row))
-    return with_bottom_row
+    return char_buffer
 
 
 def matrix_rewrite_serpentine(input_matrix: numpy.matrix) -> numpy.matrix:
@@ -101,11 +99,14 @@ def matrix_to_pixel_list(
     background: GRB_Pixel = GRB_Pixel(0, 0, 0),
     serpentine: bool = True,
 ) -> list[GRB_Pixel]:
-    # need to trim to correct buffer size before altering shape
+
+    zero_row = numpy.zeros(matrix.shape[1], dtype=int)
+    with_bottom_row = numpy.row_stack((matrix, zero_row))
+
     if serpentine:
-        matrix = matrix_rewrite_serpentine(matrix)
-        [print(row) for row in render_matrix_ascii(matrix)]
-    ravelled = matrix.ravel('F')
+        with_bottom_row = matrix_rewrite_serpentine(with_bottom_row)
+
+    ravelled = with_bottom_row.ravel('F')
     as_list = ravelled.tolist()[0]
     as_pixels = [(background, foreground)[x] for x in as_list]
 
