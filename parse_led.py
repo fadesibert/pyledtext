@@ -88,10 +88,17 @@ def matrix_to_pixels(
     return ravelled.reshape(transformed_type.shape)
 
 
+def matrix_rewrite_serpentine(input: numpy.matrix) -> numpy.matrix:
+    input[1::2, :] = input[1::2, ::-1]
+    return input
+
+
 if __name__ == "__main__":
     fn = "FontMatrise.h"
     CHAR_MAP = translate_header_file(fn)
     hw = "Hello, World"
     mat = string_to_matrix(hw)
     pix = matrix_to_pixels(mat)
+    pixs = matrix_rewrite_serpentine(pix)
+    print(pixs)
 
