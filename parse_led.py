@@ -76,10 +76,10 @@ def string_to_matrix(input: str):
 
 def matrix_to_pixels(
     matrix: numpy.matrix,
-    foreground: GRB_Pixel = GRB_Pixel(255,0,0),
+    foreground: GRB_Pixel = GRB_Pixel(255, 0, 0),
 ):
-    transformed_type = matrix.astype('i8,i8,i8')
-    transformed_type[transformed_type == (1,1,1)] = foreground
+    transformed_type = matrix.astype("i8,i8,i8")
+    transformed_type[transformed_type == (1, 1, 1)] = foreground
     return transformed_type
 
 
@@ -91,4 +91,3 @@ if __name__ == "__main__":
     pix = matrix_to_pixels(mat)
 
     breakpoint()
-
