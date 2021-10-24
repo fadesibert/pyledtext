@@ -85,7 +85,6 @@ def matrix_to_pixels(
             if (x.item()) == (1, 1, 1):
                 x[...] = tuple(foreground.__list__())
 
-    breakpoint()
     return ravelled.reshape(transformed_type.shape)
 
 
