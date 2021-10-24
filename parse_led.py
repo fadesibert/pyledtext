@@ -1,12 +1,31 @@
 import time
-from dataclasses import dataclass, fields
+from dataclasses import astuple, dataclass, fields
 from enum import Enum
 
 import board
 import neopixel
 import numpy
 
-CHAR_MAP = []
+# These are used in setup
+def translate_header_file(filename: str = "FontMatrise.h") -> list[list[int]]:
+    ascii_char_map = []
+
+    with open(filename) as fh:
+        x = [row_to_binary_str(row) for row in fh.readlines()]
+        [ascii_char_map.append(y) for y in x if y]
+
+    return ascii_char_map
+
+def row_to_binary_str(row: str) -> list[str]:
+    if row.strip()[0:2:1] == "0x":
+        line = eval(row.strip()[0:42])
+        binary = [f"{x:08b}" for x in line]
+        return binary
+    else:
+        return None
+
+
+CHAR_MAP = translate_header_file()
 
 
 class PixelRangeError(Exception):
@@ -38,70 +57,60 @@ class GRB_Pixel:
 
     def __list__(self):
         return [self.green, self.red, self.blue]
+    
+    def __len__(self):
+        return 3
+
+    def __iter__(self):
+        return iter(astuple(self))
 
 
-def row_to_binary_str(row: str) -> str:
-    if row.strip()[0:2:1] == "0x":
-        line = eval(row.strip()[0:42])
-        binary = [f"{x:08b}" for x in line]
-        return binary
-    else:
-        return None
+def _handle_row(row: list[str]) -> str:
+    new_row = [(" ", "*")[cell] for cell in row]
+    return "".join(new_row)
 
-
-def led_test_render(character) -> str:
-    char_led = []
-    for line in character:
-        char_led.append("".join([(" ", "*")[int(x)] for x in line]))
-    return "\n".join(char_led)
-
-
-def translate_header_file(filename: str) -> list[list[int]]:
-    ascii_char_map = []
-
-    with open("FontMatrise.h") as fh:
-        x = [row_to_binary_str(row) for row in fh.readlines()]
-        [ascii_char_map.append(y) for y in x if y]
-
-    return ascii_char_map
-
-
-def char_to_led_test(char: chr) -> str:
-    return led_test_render(char_to_matrix(char))
-
+def render_matrix_ascii(matrix: numpy.matrix) -> list[str]:
+    display = [_handle_row(row) for row in matrix.tolist()]
+    return display
 
 def char_to_matrix(char: chr) -> numpy.matrix:
+    global CHAR_MAP
     rows = CHAR_MAP[ord(char) - 32]
     rows_n = []
     for row in rows:
         rows_n.append([int(x) for x in row])
-
     return numpy.asmatrix(rows_n, dtype="i8")
 
 
 def string_to_matrix(input: str):
     characters = [char_to_matrix(x) for x in input]
     char_buffer = numpy.concatenate(characters, 1)
-    return char_buffer
+    zero_row = numpy.zeros(char_buffer.shape[1], dtype=int)
+    with_bottom_row = numpy.row_stack((char_buffer, zero_row))
+    return with_bottom_row
 
 
-def matrix_to_pixels(
+def matrix_rewrite_serpentine(input_matrix: numpy.matrix) -> numpy.matrix:
+    input_matrix[:, 1::2] = numpy.flipud(input_matrix[:, 1::2])
+    return input_matrix
+
+
+def matrix_to_pixel_list(
     matrix: numpy.matrix,
     foreground: GRB_Pixel = GRB_Pixel(255, 0, 0),
-):
-    transformed_type = matrix.astype("i8,i8,i8")
-    ravelled = transformed_type.ravel()
-    with numpy.nditer(ravelled, op_flags=["readwrite"]) as nd:
-        for x in nd:
-            if (x.item()) == (1, 1, 1):
-                x[...] = tuple(foreground.__list__())
-
-    return ravelled.reshape(transformed_type.shape)
-
-
-def matrix_rewrite_serpentine(input: numpy.matrix) -> numpy.matrix:
-    input[1::2, :] = input[1::2, ::-1]
-    return input
+    background: GRB_Pixel = GRB_Pixel(0, 0, 0),
+    serpentine: bool = True,
+) -> list[GRB_Pixel]:
+    # need to trim to correct buffer size before altering shape
+    if serpentine:
+        matrix = matrix_rewrite_serpentine(matrix)
+        [print(row) for row in render_matrix_ascii(matrix)]
+    print(f'RxC: {matrix.shape}')
+    ravelled = matrix.ravel('F')
+    as_list = ravelled.tolist()[0]
+    as_pixels = [(background, foreground)[x] for x in as_list]
+    
+    return as_pixels
 
 
 def scroll_text(
@@ -115,28 +124,28 @@ def scroll_text(
     emulate: bool = False,
     brightness: float = 0.01,
 ):
-    num_pixels = LED_WIDTH * LED_HEIGHT
-    matrix = matrix_to_pixels(string_to_matrix(message))
-    message_height, message_width = matrix.shape
-    buffer_width = LED_WIDTH * pixels_per_char * 2
-    filler_width = buffer_width - message_width
-    zeroes = numpy.asmatrix(numpy.full((message_height, filler_width), 0, dtype="i8,i8,i8"))
-    filled_matrix = numpy.concatenate((matrix.T, zeroes.T)).T
-    if not emulate:
-        pixels = neopixel.NeoPixel(board.D21, num_pixels, brightness=brightness)
-    # Scrolling
-    for i in range(-message_width, message_width):
-        display = numpy.roll(filled_matrix, i)[:, 0:LED_WIDTH]
-        # replace this with a neopixel call - or buffer this since we have the memory on a pi?
-        if emulate:
-            print(display)
-        else:
-            pixels[0:LED_WIDTH] = filled_matrix.ravel().tolist()[0]
-        time.sleep(1 / scroll_speed)
+    import board
+    import neopixel
 
+def display_text(
+    message: str,
+    LED_WIDTH: int,
+    LED_HEIGHT: int,
+    serpentine: bool = True,
+    pixels_per_char: int = 8,
+    brightness: float = 0.01,
+):
+    import board
+    import neopixel
+    num_pixels = LED_WIDTH * LED_HEIGHT
+    message_matrix = string_to_matrix(message)
+    txt = render_matrix_ascii(message_matrix)
+    [print(x) for x in txt]
+    
+    message_pixels = matrix_to_pixel_list(message_matrix, background=GRB_Pixel(12, 12, 12))
+    pixels = neopixel.NeoPixel(board.D21, num_pixels, brightness=brightness)
+    pixels[0:num_pixels] = message_pixels[0:num_pixels]
 
 if __name__ == "__main__":
-    fn = "FontMatrise.h"
-    CHAR_MAP = translate_header_file(fn)
-    hw = "Hello, World"
-    scroll_text(hw, 32, 8, ScrollDirection.LEFT, 20, False)
+    hw = "a bc d"
+    display_text(hw, 32, 8, serpentine=True, brightness=0.1)
