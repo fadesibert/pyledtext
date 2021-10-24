@@ -65,7 +65,7 @@ def char_to_matrix(char: chr) -> numpy.matrix:
     for row in rows:
         rows_n.append([int(x) for x in row])
 
-    return numpy.asmatrix(rows_n)
+    return numpy.asmatrix(rows_n, dtype="i8")
 
 
 def string_to_matrix(input: str):
@@ -77,12 +77,11 @@ def string_to_matrix(input: str):
 def matrix_to_pixels(
     matrix: numpy.matrix,
     foreground: GRB_Pixel = GRB_Pixel(255,0,0),
-    background: GRB_Pixel = GRB_Pixel(0,0,0)
 ):
-    matrix[matrix == 1] = foreground.__list__()
-    matrix[matrix == 0] = background.__list__()
+    transformed_type = matrix.astype('i8,i8,i8')
+    transformed_type[transformed_type == (1,1,1)] = foreground
+    return transformed_type
 
-    return matrix
 
 if __name__ == "__main__":
     fn = "FontMatrise.h"
@@ -93,4 +92,3 @@ if __name__ == "__main__":
 
     breakpoint()
 
-    #pix = matrix_to_pixels(string_to_matrix(hw))
