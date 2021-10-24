@@ -25,8 +25,11 @@ class GRB_Pixel:
             else:
                 raise PixelRangeError(field.name, value)
 
+    def __list__(self):
+        return [self.green, self.red, self.blue]
 
-def row_to_binary(row: str) -> str:
+
+def row_to_binary_str(row: str) -> str:
     if row.strip()[0:2:1] == "0x":
         line = eval(row.strip()[0:42])
         binary = [f"{x:08b}" for x in line]
@@ -46,7 +49,7 @@ def translate_header_file(filename: str) -> list[list[int]]:
     ascii_char_map = []
 
     with open("FontMatrise.h") as fh:
-        x = [row_to_binary(row) for row in fh.readlines()]
+        x = [row_to_binary_str(row) for row in fh.readlines()]
         [ascii_char_map.append(y) for y in x if y]
 
     return ascii_char_map
@@ -56,23 +59,38 @@ def char_to_led_test(char: chr) -> str:
     return led_test_render(char_to_matrix(char))
 
 
-def char_to_matrix(char: chr) -> list[int]:
-    return CHAR_MAP[ord(char) - 32]
+def char_to_matrix(char: chr) -> numpy.matrix:
+    rows = CHAR_MAP[ord(char) - 32]
+    rows_n = []
+    for row in rows:
+        rows_n.append([int(x) for x in row])
+
+    return numpy.asmatrix(rows_n)
 
 
 def string_to_matrix(input: str):
     characters = [char_to_matrix(x) for x in input]
-    rowlist = numpy.concatenate(characters)
-    char_buffer = rowlist.reshape(7, len(str))
+    char_buffer = numpy.concatenate(characters, 1)
     return char_buffer
 
 
-def matrix_to_pixels(matrix: numpy.matrix, color:GRB_Pixel = GRB_Pixel(255,0,0):
-    pass
+def matrix_to_pixels(
+    matrix: numpy.matrix,
+    foreground: GRB_Pixel = GRB_Pixel(255,0,0),
+    background: GRB_Pixel = GRB_Pixel(0,0,0)
+):
+    matrix[matrix == 1] = foreground.__list__()
+    matrix[matrix == 0] = background.__list__()
 
+    return matrix
 
 if __name__ == "__main__":
     fn = "FontMatrise.h"
     CHAR_MAP = translate_header_file(fn)
     hw = "Hello, World"
-    print(string_to_matrix(hw))
+    mat = string_to_matrix(hw)
+    pix = matrix_to_pixels(mat)
+
+    breakpoint()
+
+    #pix = matrix_to_pixels(string_to_matrix(hw))
