@@ -123,7 +123,7 @@ def scroll_text(
         display = numpy.roll(filled_matrix, i)[:, 0:LED_WIDTH]
         # replace this with a neopixel call - or buffer this since we have the memory on a pi?
         print(display)
-        time.sleep(1 / scroll_speed)
+        time.sleep(1.0 / scroll_speed)
 
 
 if __name__ == "__main__":
