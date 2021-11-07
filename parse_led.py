@@ -2,6 +2,8 @@ import time
 from dataclasses import dataclass, fields
 from enum import Enum
 
+import board
+import neopixel
 import numpy
 
 CHAR_MAP = []
@@ -109,25 +111,32 @@ def scroll_text(
     scroll_direction: ScrollDirection,
     scroll_speed: int = 20,
     serpentine: bool = True,
+    pixels_per_char: int = 8,
+    emulate: bool = False,
+    brightness: float = 0.01,
 ):
+    num_pixels = LED_WIDTH * LED_HEIGHT
     matrix = matrix_to_pixels(string_to_matrix(message))
     message_height, message_width = matrix.shape
-    breakpoint()
-    buffer_width = LED_WIDTH * 2
+    buffer_width = LED_WIDTH * pixels_per_char * 2
     filler_width = buffer_width - message_width
     zeroes = numpy.asmatrix(numpy.full((message_height, filler_width), 0, dtype="i8,i8,i8"))
     filled_matrix = numpy.concatenate((matrix.T, zeroes.T)).T
-
+    if not emulate:
+        pixels = neopixel.NeoPixel(board.D21, num_pixels, brightness=brightness)
     # Scrolling
     for i in range(-message_width, message_width):
         display = numpy.roll(filled_matrix, i)[:, 0:LED_WIDTH]
         # replace this with a neopixel call - or buffer this since we have the memory on a pi?
-        print(display)
-        time.sleep(1.0 / scroll_speed)
+        if emulate:
+            print(display)
+        else:
+            pixels[0:LED_WIDTH] = filled_matrix.ravel().tolist()[0]
+        time.sleep(1 / scroll_speed)
 
 
 if __name__ == "__main__":
     fn = "FontMatrise.h"
     CHAR_MAP = translate_header_file(fn)
     hw = "Hello, World"
-    scroll_text(hw, 96, 8, ScrollDirection.LEFT, 20, False)
+    scroll_text(hw, 32, 8, ScrollDirection.LEFT, 20, False)
