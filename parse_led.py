@@ -123,13 +123,7 @@ def scroll_text(
     brightness: float = 0.01,
 ):
     import board
-    num_pixels = LED_WIDTH * LED_HEIGHT
-    matrix = matrix_to_pixel_list(string_to_matrix(message))
-    message_height, message_width = matrix.shape
-    buffer_width = LED_WIDTH * pixels_per_char * 2
-    filler_width = buffer_width - message_width
-    zeroes = numpy.asmatrix(numpy.full((message_height, filler_width), 0, dtype="i8,i8,i8"))
-    filled_matrix = numpy.concatenate((matrix.T, zeroes.T)).T
+    import neopixel
 
 
 def display_text(
@@ -149,10 +143,10 @@ def display_text(
     
     message_pixels = matrix_to_pixel_list(message_matrix, background=GRB_Pixel(12, 12, 12))
     pixels = neopixel.NeoPixel(board.D21, num_pixels, brightness=brightness)
-    pixels[0:num_pixels] = message_pixels
+    pixels[0:num_pixels] = message_pixels[0:num_pixels]
 
 if __name__ == "__main__":
     fn = "FontMatrise.h"
     CHAR_MAP = translate_header_file(fn)
-    hw = "a    "
+    hw = "a bc d"
     display_text(hw, 32, 8, serpentine=True, brightness=0.1)
