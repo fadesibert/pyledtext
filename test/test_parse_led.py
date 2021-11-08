@@ -77,7 +77,7 @@ class TestPyLedTest:
         expected_output_small = [
             fg, fg, bg, bg,
             bg, fg, bg, bg,
-            fg, bg. fg. bg
+            fg, bg, fg, bg,
         ]
 
         test_output_small = parse_led.matrix_to_pixel_list(test_matrix_small, foreground=fg, background=bg, serpentine=True)
