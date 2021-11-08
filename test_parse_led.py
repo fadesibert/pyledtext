@@ -37,7 +37,22 @@ class TestPyLedTest:
         pass
 
     def test_matrix_rewrite_serpentine(self):
-        pass
+        test_matrix = numpy.matrix([
+            [0, 1, 1, 1],
+            [1, 0, 1, 1],
+            [1, 1, 0, 1],
+            [1, 1, 1, 0]
+        ])
+        expected_output = numpy.matrix([
+            [0, 1, 1, 0],
+            [1, 1, 1, 1],
+            [1, 0, 0, 1],
+            [1, 1, 1, 1]
+        ])
+
+        test_output = parse_led.matrix_rewrite_serpentine(test_matrix)
+
+        assert (expected_output == test_output).all()
     
     def test_matrix_to_pixel_list(self):
         pass

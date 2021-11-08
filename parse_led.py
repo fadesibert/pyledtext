@@ -85,9 +85,9 @@ def string_to_matrix(input: str):
     return with_bottom_row
 
 
-def matrix_rewrite_serpentine(input: numpy.matrix) -> numpy.matrix:
-    input[1::2, :] = input[1::2, ::-1]
-    return input
+def matrix_rewrite_serpentine(input_matrix: numpy.matrix) -> numpy.matrix:
+    input_matrix[:, 1::2] = numpy.flipud(input_matrix[:, 1::2])
+    return input_matrix
 
 
 def matrix_to_pixel_list(
