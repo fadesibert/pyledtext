@@ -29,3 +29,15 @@ class TestPyLedTest:
 
         expected_output_long = ["*    *", "  ** *"]
         assert expected_output_long == parse_led.render_matrix_ascii(test_matrix_long)
+
+    def test_char_to_matrix(self):
+        pass
+
+    def test_string_to_matrix(self):
+        pass
+
+    def test_matrix_rewrite_serpentine(self):
+        pass
+    
+    def test_matrix_to_pixel_list(self):
+        pass
