@@ -57,7 +57,7 @@ class GRB_Pixel:
 
     def __list__(self):
         return [self.green, self.red, self.blue]
-    
+
     def __len__(self):
         return 3
 
@@ -108,7 +108,7 @@ def matrix_to_pixel_list(
     ravelled = matrix.ravel('F')
     as_list = ravelled.tolist()[0]
     as_pixels = [(background, foreground)[x] for x in as_list]
-    
+
     return as_pixels
 
 
@@ -131,7 +131,7 @@ def scroll_text(
     num_pixels = LED_WIDTH * LED_HEIGHT
     message_matrix = string_to_matrix(message)
     pixels = neopixel.NeoPixel(board.D21, num_pixels, brightness=brightness)
-    
+
     left_pad, right_pad = 2 * (numpy.matrix(numpy.zeros((LED_HEIGHT, LED_WIDTH), dtype=int)),)
     padded_matrix = numpy.concatenate((left_pad, message_matrix, right_pad),1)
     for i in range(padded_matrix.shape[1]):
@@ -154,14 +154,11 @@ def display_text(
     import neopixel
     num_pixels = LED_WIDTH * LED_HEIGHT
     message_matrix = string_to_matrix(message)
-    txt = render_matrix_ascii(message_matrix)
-    [print(x) for x in txt]
-    
+
     message_pixels = matrix_to_pixel_list(message_matrix, background=GRB_Pixel(12, 12, 12))
     pixels = neopixel.NeoPixel(board.D21, num_pixels, brightness=brightness)
     pixels[0:num_pixels-1] = message_pixels[0:num_pixels]
 
 if __name__ == "__main__":
     hw = "abcdefg"
-    #display_text(hw, 32, 8, serpentine=True, brightness=0.1)
     scroll_text(hw, 32, 8, serpentine=True, brightness=0.1, scroll_direction=ScrollDirection.LEFT)
