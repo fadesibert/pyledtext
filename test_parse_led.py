@@ -31,7 +31,17 @@ class TestPyLedTest:
         assert expected_output_long == parse_led.render_matrix_ascii(test_matrix_long)
 
     def test_char_to_matrix(self):
-        pass
+        expected_output_a = numpy.matrix([
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0], 
+            [0, 1, 1, 1, 0, 0, 0, 0],
+            [1, 0, 0, 0, 1, 0, 0, 0],
+            [1, 0, 0, 0, 1, 0, 0, 0], 
+            [1, 0, 0, 1, 1, 0, 0, 0],
+            [0, 1, 1, 0, 1, 0, 0, 0]
+        ])
+        test_output_a = parse_led.char_to_matrix("a")
+        assert (expected_output_a == test_output_a).all()
 
     def test_string_to_matrix(self):
         pass

@@ -4,7 +4,26 @@ from enum import Enum
 
 import numpy
 
-CHAR_MAP = []
+# These are used in setup
+def translate_header_file(filename: str = "FontMatrise.h") -> list[list[int]]:
+    ascii_char_map = []
+
+    with open(filename) as fh:
+        x = [row_to_binary_str(row) for row in fh.readlines()]
+        [ascii_char_map.append(y) for y in x if y]
+
+    return ascii_char_map
+
+def row_to_binary_str(row: str) -> list[str]:
+    if row.strip()[0:2:1] == "0x":
+        line = eval(row.strip()[0:42])
+        binary = [f"{x:08b}" for x in line]
+        return binary
+    else:
+        return None
+
+
+CHAR_MAP = translate_header_file()
 
 
 class PixelRangeError(Exception):
@@ -43,23 +62,6 @@ class GRB_Pixel:
     def __iter__(self):
         return iter(astuple(self))
 
-def row_to_binary_str(row: str) -> list[str]:
-    if row.strip()[0:2:1] == "0x":
-        line = eval(row.strip()[0:42])
-        binary = [f"{x:08b}" for x in line]
-        return binary
-    else:
-        return None
-
-
-def translate_header_file(filename: str) -> list[list[int]]:
-    ascii_char_map = []
-
-    with open("FontMatrise.h") as fh:
-        x = [row_to_binary_str(row) for row in fh.readlines()]
-        [ascii_char_map.append(y) for y in x if y]
-
-    return ascii_char_map
 
 def _handle_row(row: list[str]) -> str:
     new_row = [(" ", "*")[cell] for cell in row]
@@ -70,6 +72,7 @@ def render_matrix_ascii(matrix: numpy.matrix) -> list[str]:
     return display
 
 def char_to_matrix(char: chr) -> numpy.matrix:
+    global CHAR_MAP
     rows = CHAR_MAP[ord(char) - 32]
     rows_n = []
     for row in rows:
