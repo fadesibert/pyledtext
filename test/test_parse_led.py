@@ -2,6 +2,7 @@ import numpy
 import pytest
 from pyledtext import parse_led
 
+@pytest.mark.filterwarnings("ignore:.*:PendingDeprecationWarning")
 class TestPyLedTest:
 
     def test_row_to_binary(self):
