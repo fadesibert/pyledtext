@@ -2,8 +2,6 @@ import time
 from dataclasses import astuple, dataclass, fields
 from enum import Enum
 
-import board
-import neopixel
 import numpy
 
 CHAR_MAP = []
@@ -45,7 +43,7 @@ class GRB_Pixel:
     def __iter__(self):
         return iter(astuple(self))
 
-def row_to_binary_str(row: str) -> str:
+def row_to_binary_str(row: str) -> list[str]:
     if row.strip()[0:2:1] == "0x":
         line = eval(row.strip()[0:42])
         binary = [f"{x:08b}" for x in line]
@@ -121,8 +119,9 @@ def scroll_text(
     emulate: bool = False,
     brightness: float = 0.01,
 ):
+    import board
     num_pixels = LED_WIDTH * LED_HEIGHT
-    matrix = matrix_to_pixels(string_to_matrix(message))
+    matrix = matrix_to_pixel_list(string_to_matrix(message))
     message_height, message_width = matrix.shape
     buffer_width = LED_WIDTH * pixels_per_char * 2
     filler_width = buffer_width - message_width
@@ -138,6 +137,8 @@ def display_text(
     pixels_per_char: int = 8,
     brightness: float = 0.01,
 ):
+    import board
+    import neopixel
     num_pixels = LED_WIDTH * LED_HEIGHT
     message_matrix = string_to_matrix(message)
     txt = render_matrix_ascii(message_matrix)
