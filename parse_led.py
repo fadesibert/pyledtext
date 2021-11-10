@@ -99,14 +99,21 @@ def matrix_to_pixel_list(
     foreground: GRB_Pixel = GRB_Pixel(255, 0, 0),
     background: GRB_Pixel = GRB_Pixel(0, 0, 0),
     serpentine: bool = True,
+    pad_rows: int = 1,
 ) -> list[GRB_Pixel]:
-    zero_row = numpy.zeros(matrix.shape[1], dtype=int)
-    with_bottom_row = numpy.row_stack((matrix, zero_row))
+    new_matrix = None
+
+    if pad_rows:
+        zero_rows = numpy.zeros((pad_rows, matrix.shape[1]), dtype=int)
+        new_matrix = numpy.row_stack((matrix, zero_rows))
+
+    else:
+        new_matrix = matrix
 
     if serpentine:
-        with_bottom_row = matrix_rewrite_serpentine(with_bottom_row)
+        new_matrix = matrix_rewrite_serpentine(new_matrix)
 
-    ravelled = with_bottom_row.ravel('F')
+    ravelled = new_matrix.ravel('F')
     as_list = ravelled.tolist()[0]
     
     as_pixels = [(background, foreground)[x] for x in as_list]
@@ -148,7 +155,38 @@ def scroll_text(
         display = padded_matrix[:, left_bound:right_bound]
         display_pixels = matrix_to_pixel_list(display, foreground=foreground, background=background, serpentine=True)
         pixels[0: len(display_pixels) - 1] = display_pixels
-        time.sleep(0.65 / framerate) # compensate for compute time
+        #time.sleep(0.65 / framerate) # compensate for compute time
+
+def blink_cursor(
+    scroll_direction: ScrollDirection,
+    num_blinks: int = 10,
+    box_width: int = 6,
+    duty_cycle: float = 0.8,
+    LED_WIDTH: int = 96,
+    LED_HEIGHT: int = 8,
+    serpentine: bool = True,
+    foreground: GRB_Pixel = GRB_Pixel(255, 0, 0),
+    background: GRB_Pixel = GRB_Pixel(0, 0, 0),
+    brightness: float = 0.1
+):
+    import board
+    import neopixel
+
+    num_pixels = LED_WIDTH * LED_HEIGHT
+    box = numpy.matrix(numpy.ones((LED_HEIGHT, box_width), dtype=int))
+    line_blank = numpy.zeros((LED_HEIGHT - 1, box_width), dtype=int)
+    line = numpy.matrix(numpy.vstack((line_blank, [1] * box_width)))
+    box_pixels = matrix_to_pixel_list(box, foreground=foreground, background=background, serpentine=True, pad_rows=0)
+    line_pixels = matrix_to_pixel_list(line, foreground=foreground, background=background, serpentine=True, pad_rows=0)
+    cursor_boundary = len(box_pixels)
+
+    with neopixel.NeoPixel(board.D21, num_pixels, brightness=brightness) as pixels:
+        for _ in range(num_blinks):
+            pixels[0:cursor_boundary] = box_pixels
+            time.sleep(duty_cycle)
+            pixels[0:cursor_boundary] = line_pixels
+            time.sleep(1.0 - duty_cycle)
+
 
 def display_text(
     message: str,
@@ -168,8 +206,9 @@ def display_text(
     pixels[0:num_pixels-1] = message_pixels[0:num_pixels]
 
 if __name__ == "__main__":
-    hw = "This is a very quick test message"
+    hw = "Penny is the best girlfriend of all time!"
     #cProfile.run(
     #    'scroll_text(hw, 96, 8, serpentine=True, brightness=0.1, scroll_direction=ScrollDirection.LEFT)'
     #)
     scroll_text(hw, 96, 8, serpentine=True, brightness=0.1, scroll_direction=ScrollDirection.LEFT)
+    #blink_cursor(ScrollDirection.LEFT, duty_cycle=0.7, foreground=GRB_Pixel(157, 206, 217))
