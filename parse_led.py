@@ -1,11 +1,11 @@
-import time
+# import time
 from dataclasses import astuple, dataclass, fields
 from enum import Enum
 
-import board
-import neopixel
+# import board
+# import neopixel
 import numpy
-import cProfile
+# import cProfile
 
 # These are used in setup
 def translate_header_file(filename: str = "FontMatrise.h") -> list[list[int]]:
@@ -206,9 +206,15 @@ def display_text(
     pixels[0:num_pixels-1] = message_pixels[0:num_pixels]
 
 if __name__ == "__main__":
-    hw = "Penny is the best girlfriend of all time!"
+    font_map = translate_header_file()
+    i = 32
+    for char_ in font_map:
+        #print(chr(i), '\t'.join([hex(int(row)) for row in char_]).expandtabs(10))
+        print(','.join([hex(int(row)) for row in char_]))
+        i += 1
+        
     #cProfile.run(
     #    'scroll_text(hw, 96, 8, serpentine=True, brightness=0.1, scroll_direction=ScrollDirection.LEFT)'
     #)
-    scroll_text(hw, 96, 8, serpentine=True, brightness=0.1, scroll_direction=ScrollDirection.LEFT)
+    # scroll_text(hw, 96, 8, serpentine=True, brightness=0.1, scroll_direction=ScrollDirection.LEFT)
     #blink_cursor(ScrollDirection.LEFT, duty_cycle=0.7, foreground=GRB_Pixel(157, 206, 217))
