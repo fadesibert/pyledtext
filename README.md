@@ -28,6 +28,36 @@ The ESP32 runs at 3.3V, but many / most WS2812Bs run off of 5V. You can sometime
 # Diagrams
 
 __Some crude circuit diagrams for assembling hardware.__
+ESP32 -> WS2812B
+
+```mermaid
+flowchart LR
+    idV[5V]
+    idV1[5V]
+    idV2[GND]
+    idA[ESP32]
+    idA1[ESP32 3V3]
+    idA2[ESP32 GND]
+    idA3[ESP32 GPIO]
+    idB[LM317T (High)]
+    idC[LM317T (Low)]
+    idD[WS2812B]
+    idD1[WS VCC]
+    idD2[WS DATA]
+    idD3[WS GND]
+    V --> V1
+    V1 --> A & B
+    V2 --> D3
+    A --> A1 & A2 & A3
+    A1 --> C
+    C --> B
+    B --> D
+    A3 --> C
+    B --> D1
+    B --> D2
+    D <-- D1 & D2 & D3
+
+```
 
 # Addendum
 
