@@ -20,10 +20,10 @@ Best scheduled with cron. Bear in mind that this app will need to run as root (f
 ## ESP32
 
 The ESP32 runs at 3.3V, but many / most WS2812Bs run off of 5V. You can sometimes just get away with it, but there are a few methods of ensuring success:
-* (my current approach) Use a linear voltage regulator such as the LM317T to boost the 3.3V PWM logic to 5V. The WS2812B datasheet specifies minimum 1/0 levels and tolerances - so adjust accordingly. Given that I powered this device from a USB brick, and the fact that the GPIO ports REALLY don't like to put out more than 500mA (your requirements will be a function of number of LEDs and brightness) - I used one USB connection to the ESP32 to power the controller and the GPIO logic (and to provide the LV side of the LM317T), and one connection into the high side of the LM317T, and directly into the Vcc / GND connection of the WS2812.
+* (my current approach) Use a linear voltage regulator such as the LM317T to boost the 3.3V PWM logic to 5V. The [WS2812B datasheet](https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf) specifies minimum 1/0 levels and tolerances - so adjust accordingly. Given that I powered this device from a USB brick, and the fact that the GPIO ports *really* don't like to put out more than 500mA (your requirements will be a function of number of LEDs and brightness) - I used one USB connection to the ESP32 to power the controller and the GPIO logic (and to provide the LV side of the LM317T), and one connection into the high side of the LM317T, and directly into the Vcc / GND connection of the WS2812.
 * There are some hacks with shorting the first pixel so it behaves like a diode, but the wisdom / efficacy of this method is beyond my electrical engineering skills
 * Use an SPI based implementation. Left as an exercise to the reader
 
-#Addendum
+# Addendum
 
 Uses font header files - as found in LEDText - to generate binary arrays for mLED Matrix Displays (like WS2812B) - which take simple on/off clocked signals. Useful for using Python (maybe CircuitPy?) for displaying scrolling text on a standard set of LED Stirips
