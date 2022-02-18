@@ -32,31 +32,40 @@ ESP32 -> WS2812B
 
 ```mermaid
 flowchart LR
-    V[5V]
+    subgraph 5V
     V1[5V]
     V2[GND]
-    A[ESP32]
+    end
+    subgraph ESP32
     A1[ESP32 3V3]
     A2[ESP32 GND]
     A3[ESP32 GPIO]
-    B[LM317T (High)]
-    C[LM317T (Low)]
-    D[WS2812B]
+    end
+    subgraph LM317T
+    subgraph LM317T High
+    B1[High VRef]
+    B2[High GND]
+    B3[High H1]
+    end
+    subgraph LM317T Low
+    C1[Low VRef]
+    C2[Low GND]
+    C3[Low L1]
+    end
+    end
+    subgraph WS2812B
     D1[WS VCC]
     D2[WS DATA]
     D3[WS GND]
-    V --> V1
-    V1 --> A & B
+    end
+    V1 --> D1
     V2 --> D3
-    A --> A1 & A2 & A3
-    A1 --> C
-    C --> B
-    B --> D
-    A3 --> C
-    B --> D1
-    B --> D2
-    D --> D1 & D2 & D3
-
+    A1 --> C1
+    A2 --> C2
+    A3 --> C3
+    B3 --> D2 
+    V2 --> B2
+    V1 --> B1
 ```
 
 # Addendum
