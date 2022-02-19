@@ -1,14 +1,17 @@
 from array import array
-import numpy
-import neopixel
-from machine import const, Pin
+from ulab import numpy
+import ulab as neopixel
+from math import floor
+#from machine import const, Pin
 import uctypes
+
+const = lambda x: int(x)
 
 LEFT = const(1)
 RIGHT = const(-1)
 LED_PIN = const(21)  # Modify this value to change LED Pin. Refer to Pinout Diagram
 LED_BRIGHTNESS = const(50)  # value out 100
-LED_BRIGHT_MULT = const(int(LED_BRIGHTNESS / 255))
+LED_BRIGHT_MULT = int(floor((LED_BRIGHTNESS / 255)))
 
 LED_WIDTH = const(96)
 LED_HEIGHT = const(8)
@@ -223,10 +226,13 @@ if __name__ == "__main__":
     # configure wifi
     ASCII_OFFSET = 32
     i = ASCII_OFFSET
-    for row in FONT_MAP:
+    for char_ in FONT_MAP:
         # set CPU speed
         # configure wifi
         # print(f'{i=} {chr(i)}\t' + '\t'.join(row).expandtabs(10))
-        print("|".join(row))
-        # i += 1
+        print(chr(i))
+        for row in char_:
+            print(row)
+
+        i += 1
     # sleep
