@@ -61,7 +61,6 @@ flowchart LR
     5V --> ESP32
     V1 --> D1
     V2 --> D3
-    Note left of D3: Consider a 100uF capacitor here
     V2 --> D3
     A1 --> C1
     A2 --> C2
