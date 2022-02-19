@@ -58,7 +58,8 @@ flowchart LR
     D2[WS DATA]
     D3[WS GND]
     end
-    V1 --> D1
+    5V --> ESP32
+    V1 & V2 -100 uF-> D1 & D3
     V2 --> D3
     A1 --> C1
     A2 --> C2
