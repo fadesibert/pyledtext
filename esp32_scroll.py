@@ -1,11 +1,12 @@
 from array import array
 from ulab import numpy
-import ulab as neopixel
+import neopixel
 from math import floor
-#from machine import const, Pin
+from machine import const, Pin
 import uctypes
 
-const = lambda x: int(x)
+# hack when running *nix micropython port
+# const = lambda x: int(x)
 
 LEFT = const(1)
 RIGHT = const(-1)
@@ -19,6 +20,11 @@ LED_FIELD = const(LED_WIDTH * LED_HEIGHT)
 
 SCROLL_DIRECTION_LEFT = const(1)
 SCROLL_DIRECTION_RIGHT = const(-1)
+
+WIFI_ESSID = "AnyNetwork"
+WIFI_KEY = "SomeBigHugeSecret"
+
+ENDPOINT_URI = "https://myfancyapi.com/messages/"
 
 # Using Consts as Enum not supported in MicroPython
 SCROLL_DIRECTION = SCROLL_DIRECTION_LEFT  # change this using another const
@@ -188,7 +194,7 @@ def scroll_text(
     framerate: int = 40,
 ):
     message_matrix = string_to_matrix(message)
-    pixels = neopixel.NeoPixel(Pin(D21, Pin.OUT), LED_FIELD)
+    pixels = neopixel.NeoPixel(Pin(LED_PIN, Pin.OUT), LED_FIELD)
 
     left_pad, right_pad = 2 * (numpy.matrix(numpy.zeros((LED_HEIGHT - 1, LED_WIDTH), dtype=int)),)
     padded_matrix = numpy.concatenate((left_pad, message_matrix, right_pad), 1)
@@ -207,18 +213,13 @@ def scroll_text(
         pixels[0 : len(display_pixels) - 1] = display_pixels
 
 
-def display_text(
-    message: str,
-    LED_WIDTH: int,
-    LED_HEIGHT: int,
-    serpentine: bool = True,
-):
+def wifi_connect() -> None:
+    pass
 
-    message_matrix = string_to_matrix(message)
 
-    message_pixels = matrix_to_pixel_list(message_matrix, background=GRB_Pixel(12, 12, 12))
-    pixels = neopixel.NeoPixel(Pin(21, Pin.OUT), LED_FIELD)
-    pixels[0 : LED_FIELD - 1] = message_pixels[0:LED_FIELD]
+def fetch_message() -> str:
+    # FIXME implement appropriate HTTP GET logic
+    return f" {ENDPOINT_URI} Hello, World!"
 
 
 if __name__ == "__main__":
