@@ -61,7 +61,6 @@ flowchart LR
     5V --> ESP32
     V1 --> D1
     V2 --> D3
-    V2 --> D3
     A1 --> C1
     A2 --> C2
     A3 --> C3
