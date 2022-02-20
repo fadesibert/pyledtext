@@ -139,7 +139,9 @@ FONT_MAP = [
 
 
 class GRB_Pixel:
-    def __init__(self, green: uctypes.UINT8 = 0, red: uctypes.UINT8 = 0, blue: uctypes.UINT8 = 0):
+    def __init__(
+        self, green: uctypes.UINT8 = 0, red: uctypes.UINT8 = 0, blue: uctypes.UINT8 = 0
+    ):
         self.green = green
         self.red = red
         self.blue = blue
@@ -205,7 +207,9 @@ def scroll_text(
     message_matrix = string_to_matrix(message)
     pixels = neopixel.NeoPixel(Pin(LED_PIN, Pin.OUT), LED_FIELD)
 
-    left_pad, right_pad = 2 * (numpy.matrix(numpy.zeros((LED_HEIGHT - 1, LED_WIDTH), dtype=int)),)
+    left_pad, right_pad = 2 * (
+        numpy.matrix(numpy.zeros((LED_HEIGHT - 1, LED_WIDTH), dtype=int)),
+    )
     padded_matrix = numpy.concatenate((left_pad, message_matrix, right_pad), 1)
     # Reverse the boundaries if scrolling right
     boundaries = (0, padded_matrix.shape[1])[::SCROLL_DIRECTION]
@@ -218,7 +222,9 @@ def scroll_text(
         left_bound = min(a_bound, b_bound)
         right_bound = max(a_bound, b_bound)
         display = padded_matrix[:, left_bound:right_bound]
-        display_pixels = matrix_to_pixel_list(display, foreground=foreground, background=background, serpentine=True)
+        display_pixels = matrix_to_pixel_list(
+            display, foreground=foreground, background=background, serpentine=True
+        )
         pixels[0 : len(display_pixels) - 1] = display_pixels
         pixels.write()
         # add some framerate control that accounts for computation time...
