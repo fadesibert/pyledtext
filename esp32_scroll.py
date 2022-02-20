@@ -3,8 +3,9 @@ from array import array
 from math import floor
 
 import neopixel
+import network
 import uctypes
-from machine import Pin, const
+from machine import Pin, const, deepsleep
 
 from ulab import numpy
 
@@ -28,6 +29,8 @@ WIFI_ESSID = "AnyNetwork"
 WIFI_KEY = "SomeBigHugeSecret"
 
 ENDPOINT_URI = "https://myfancyapi.com/messages/"
+
+TIME_MINS_IN_MILLIS = const(60 * 1000)
 
 # Using Consts as Enum not supported in MicroPython
 SCROLL_DIRECTION = SCROLL_DIRECTION_LEFT  # change this using another const
@@ -252,4 +255,6 @@ if __name__ == "__main__":
             print(row)
 
         i += 1
-    # sleep
+
+    sleep_time = 2 * TIME_MINS_IN_MILLIS
+    deepsleep(sleep_time)
