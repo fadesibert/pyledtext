@@ -31,6 +31,7 @@ WIFI_KEY = "SomeBigHugeSecret"
 ENDPOINT_URI = "https://myfancyapi.com/messages/"
 
 TIME_MINS_IN_MILLIS = const(60 * 1000)
+SLEEP_TIME = 2 * TIME_MINS_IN_MILLIS
 
 # Using Consts as Enum not supported in MicroPython
 SCROLL_DIRECTION = SCROLL_DIRECTION_LEFT  # change this using another const
@@ -195,7 +196,7 @@ def matrix_to_pixel_list(
 def scroll_text(
     message: str,
     serpentine: bool = True,
-    foreground: GRB_Pixel = GRB_Pixel(255, 0, 0),
+    foreground: GRB_Pixel = GRB_Pixel(128, 0, 0),
     background: GRB_Pixel = GRB_Pixel(0, 0, 0),
     framerate: int = 40,
 ):
@@ -241,20 +242,13 @@ def fetch_message() -> str:
     return f" {ENDPOINT_URI} Hello, World!"
 
 
+def run():
+    wifi_connect()
+    if message := fetch_message():
+        scroll_text(message)
+
+
 if __name__ == "__main__":
-    # set CPU speed
-    # configure wifi
-    ASCII_OFFSET = 32
-    i = ASCII_OFFSET
-    for char_ in FONT_MAP:
-        # set CPU speed
-        # configure wifi
-        # print(f'{i=} {chr(i)}\t' + '\t'.join(row).expandtabs(10))
-        print(chr(i))
-        for row in char_:
-            print(row)
-
-        i += 1
-
-    sleep_time = 2 * TIME_MINS_IN_MILLIS
-    deepsleep(sleep_time)
+    while True:
+        run()
+        deepsleep(SLEEP_TIME)
