@@ -148,31 +148,33 @@ class GRB_Pixel:
         return iter((self.green, self.red, self.blue))
 
 
-def char_to_matrix(char: chr) -> numpy.matrix:
+def char_to_matrix(char: chr) -> numpy.ndarray:
     rows = FONT_MAP[ord(char) - 32]
     rows_n = array("i", [int(x) for x in rows])
-    return numpy.asmatrix(rows_n, dtype="i8")
+
+    return numpy.ndarray(rows_n)
 
 
 # Todo make this an array rather than list
 def string_to_matrix(input: str):
-    characters = [char_to_matrix(x) for x in input]
+    characters = numpy.array([char_to_matrix(x) for x in input])
     char_buffer = numpy.concatenate(characters, 1)
     return char_buffer
 
 
-def matrix_rewrite_serpentine(input_matrix: numpy.matrix) -> numpy.matrix:
-    input_matrix[:, 1::2] = numpy.flipud(input_matrix[:, 1::2])
+def matrix_rewrite_serpentine(input_matrix: numpy.ndarray) -> numpy.ndarray:
+    input_matrix[:, 1::2] = numpy.flip(input_matrix[:, 1::2], axis=0)
     return input_matrix
 
 
 def matrix_to_pixel_list(
-    matrix: numpy.matrix,
+    matrix: numpy.ndarray,
     foreground: GRB_Pixel = GRB_Pixel(255, 0, 0),
     background: GRB_Pixel = GRB_Pixel(0, 0, 0),
     serpentine: bool = True,
     pad_rows: int = 1,
 ) -> list[GRB_Pixel]:
+
     new_matrix = None
 
     if pad_rows:
