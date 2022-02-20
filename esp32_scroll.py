@@ -5,7 +5,7 @@ from math import floor
 import neopixel
 import network
 import uctypes
-from machine import Pin, const, deepsleep
+from machine import Pin, deepsleep
 
 from ulab import numpy
 
@@ -150,7 +150,7 @@ class GRB_Pixel:
 
 def char_to_matrix(char: chr) -> numpy.matrix:
     rows = FONT_MAP[ord(char) - 32]
-    rows_n = array("i", [int(x) for x in row])
+    rows_n = array("i", [int(x) for x in rows])
     return numpy.asmatrix(rows_n, dtype="i8")
 
 
