@@ -218,6 +218,8 @@ def scroll_text(
         display = padded_matrix[:, left_bound:right_bound]
         display_pixels = matrix_to_pixel_list(display, foreground=foreground, background=background, serpentine=True)
         pixels[0 : len(display_pixels) - 1] = display_pixels
+        pixels.write()
+        # add some framerate control that accounts for computation time...
 
 
 def wifi_connect() -> None:
