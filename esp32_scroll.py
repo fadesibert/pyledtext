@@ -1,9 +1,12 @@
+import time
 from array import array
-from ulab import numpy
-import neopixel
 from math import floor
-from machine import const, Pin
+
+import neopixel
 import uctypes
+from machine import Pin, const
+
+from ulab import numpy
 
 # hack when running *nix micropython port
 # const = lambda x: int(x)
@@ -214,7 +217,20 @@ def scroll_text(
 
 
 def wifi_connect() -> None:
-    pass
+    status_led = Pin(13, Pin.OUT)
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    status_led.on()
+    wlan.connect(WIFI_ESSID, WIFI_KEY)
+    while not wlan.isconnected():
+        status_led.off()
+        time.sleep(500)
+        status_led.on()
+
+    for _ in range(5):
+        status_led.off()
+        time.sleep(100)
+        status_led.on()
 
 
 def fetch_message() -> str:
