@@ -159,7 +159,7 @@ def char_to_matrix(char: chr) -> numpy.ndarray:
 
 # Todo make this an array rather than list
 def string_to_matrix(input: str) -> numpy.array:
-    characters = numpy.ndarray([char_to_matrix(x) for x in input])
+    characters = tuple([char_to_matrix(x) for x in input])
     char_buffer = numpy.concatenate(characters)
     return char_buffer
 
@@ -174,13 +174,13 @@ def matrix_to_pixel_list(
     foreground: GRB_Pixel = GRB_Pixel(255, 0, 0),
     background: GRB_Pixel = GRB_Pixel(0, 0, 0),
     serpentine: bool = True,
-    pad_rows: int = 1,
+    pad_rows: bool = False, # no, I totally want to do this - but row_stack isn't implemented - will need hand-rolling with some slice-age
 ) -> list[GRB_Pixel]:
 
     new_matrix = None
 
     if pad_rows:
-        zero_rows = numpy.zeros((pad_rows, matrix.shape[1]), dtype=int)
+        zero_rows = numpy.zeros((pad_rows, matrix.shape[1]), dtype=numpy.uint8)
         new_matrix = numpy.row_stack((matrix, zero_rows))
 
     else:
@@ -208,9 +208,9 @@ def scroll_text(
     pixels = neopixel.NeoPixel(Pin(LED_PIN, Pin.OUT), LED_FIELD)
 
     left_pad, right_pad = 2 * (
-        numpy.matrix(numpy.zeros((LED_HEIGHT - 1, LED_WIDTH), dtype=int)),
+        numpy.ndarray(numpy.zeros((LED_HEIGHT - 1, LED_WIDTH), dtype=int)),
     )
-    padded_matrix = numpy.concatenate((left_pad, message_matrix, right_pad), 1)
+    padded_matrix = numpy.concatenate((left_pad, message_matrix, right_pad))
     # Reverse the boundaries if scrolling right
     boundaries = (0, padded_matrix.shape[1])[::SCROLL_DIRECTION]
     scroll_start, scroll_end = boundaries
