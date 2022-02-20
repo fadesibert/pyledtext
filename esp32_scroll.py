@@ -158,9 +158,9 @@ def char_to_matrix(char: chr) -> numpy.ndarray:
 
 
 # Todo make this an array rather than list
-def string_to_matrix(input: str):
-    characters = numpy.array([char_to_matrix(x) for x in input])
-    char_buffer = numpy.concatenate(characters, 1)
+def string_to_matrix(input: str) -> numpy.array:
+    characters = numpy.ndarray([char_to_matrix(x) for x in input])
+    char_buffer = numpy.concatenate(characters)
     return char_buffer
 
 
