@@ -152,14 +152,14 @@ class GRB_Pixel:
 
 def char_to_matrix(char: chr) -> numpy.ndarray:
     rows = FONT_MAP[ord(char) - 32]
-    rows_n = array("i", [int(x) for x in rows])
+    # this is the problem section - not being shaped correctly
+    rows_n = numpy.array([int(x) for x in rows], dtype=numpy.uint8)
+    return rows_n
 
-    return numpy.ndarray(rows_n)
 
-
-# Todo make this an array rather than list
 def string_to_matrix(input: str) -> numpy.array:
     characters = tuple([char_to_matrix(x) for x in input])
+    print(characters)
     char_buffer = numpy.concatenate(characters)
     return char_buffer
 
@@ -205,14 +205,16 @@ def scroll_text(
     framerate: int = 40,
 ):
     message_matrix = string_to_matrix(message)
+    print(message_matrix)
     pixels = neopixel.NeoPixel(Pin(LED_PIN, Pin.OUT), LED_FIELD)
 
-    left_pad, right_pad = 2 * (
-        numpy.ndarray(numpy.zeros((LED_HEIGHT - 1, LED_WIDTH), dtype=int)),
-    )
-    padded_matrix = numpy.concatenate((left_pad, message_matrix, right_pad))
+    #left_pad, right_pad = 2 * (
+    #    numpy.ndarray(numpy.zeros((LED_HEIGHT - 1, LED_WIDTH), dtype=numpy.uint8)),
+    #)
+    #padded_matrix = numpy.concatenate((left_pad, message_matrix, right_pad))
     # Reverse the boundaries if scrolling right
-    boundaries = (0, padded_matrix.shape[1])[::SCROLL_DIRECTION]
+    #boundaries = (0, padded_matrix.shape[1])[::SCROLL_DIRECTION]
+    boundaries = (0, message_matrix.shape[1])[::SCROLL_DIRECTION]
     scroll_start, scroll_end = boundaries
 
     # Scroll through the text
@@ -221,7 +223,8 @@ def scroll_text(
         b_bound = i + (SCROLL_DIRECTION * LED_WIDTH)
         left_bound = min(a_bound, b_bound)
         right_bound = max(a_bound, b_bound)
-        display = padded_matrix[:, left_bound:right_bound]
+        #display = padded_matrix[:, left_bound:right_bound]
+        display = meessage_matrix[:, left_bound:right_bound]
         display_pixels = matrix_to_pixel_list(
             display, foreground=foreground, background=background, serpentine=True
         )
