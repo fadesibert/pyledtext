@@ -163,10 +163,9 @@ def char_to_matrix(char: chr) -> numpy.ndarray:
     return char_as_ndarray
 
 
-def string_to_matrix(input: str) -> numpy.array:
-    characters = tuple([char_to_matrix(x) for x in input])
-    print(characters)
-    char_buffer = numpy.concatenate(characters)
+def string_to_matrix(input_: str) -> numpy.array:
+    characters = tuple([char_to_matrix(x) for x in input_]) # now it's an ndarray
+    char_buffer = numpy.concatenate(characters, axis=1)
     return char_buffer
 
 
@@ -194,7 +193,7 @@ def matrix_to_pixel_list(
 
     if serpentine:
         new_matrix = matrix_rewrite_serpentine(new_matrix)
-
+    # to list?
     ravelled = new_matrix.ravel("F")
     as_list = ravelled.tolist()[0]
 
