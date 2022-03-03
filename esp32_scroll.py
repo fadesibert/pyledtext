@@ -6,7 +6,6 @@ import neopixel
 import network
 import uctypes
 from machine import Pin, deepsleep
-
 from ulab import numpy
 
 # hack when running *nix micropython port
@@ -25,8 +24,8 @@ LED_FIELD = const(LED_WIDTH * LED_HEIGHT)
 SCROLL_DIRECTION_LEFT = const(1)
 SCROLL_DIRECTION_RIGHT = const(-1)
 
-WIFI_ESSID = "AnyNetwork"
-WIFI_KEY = "SomeBigHugeSecret"
+WIFI_ESSID = "x"
+WIFI_KEY = "x"
 
 ENDPOINT_URI = "https://myfancyapi.com/messages/"
 
@@ -139,9 +138,7 @@ FONT_MAP = [
 
 
 class GRB_Pixel:
-    def __init__(
-        self, green: uctypes.UINT8 = 0, red: uctypes.UINT8 = 0, blue: uctypes.UINT8 = 0
-    ):
+    def __init__(self, green: uctypes.UINT8 = 0, red: uctypes.UINT8 = 0, blue: uctypes.UINT8 = 0):
         self.green = green
         self.red = red
         self.blue = blue
@@ -153,7 +150,8 @@ class GRB_Pixel:
 def char_to_matrix(char: chr) -> numpy.ndarray:
     rows = FONT_MAP[ord(char) - 32]
     # this is the problem section - not being shaped correctly
-    rows_n = numpy.array([int(x) for x in rows], dtype=numpy.uint8)
+    int_to_bin = numpy.vectorize(lambda i: [int(x) for x in "{0:08b}".format(i)])
+    rows_n = numpy.ndarray((7, 8), buffer=(int_to_bin(x) for x in rows))
     return rows_n
 
 
@@ -174,7 +172,7 @@ def matrix_to_pixel_list(
     foreground: GRB_Pixel = GRB_Pixel(255, 0, 0),
     background: GRB_Pixel = GRB_Pixel(0, 0, 0),
     serpentine: bool = True,
-    pad_rows: bool = False, # no, I totally want to do this - but row_stack isn't implemented - will need hand-rolling with some slice-age
+    pad_rows: bool = False,  # no, I totally want to do this - but row_stack isn't implemented - will need hand-rolling with some slice-age
 ) -> list[GRB_Pixel]:
 
     new_matrix = None
@@ -208,12 +206,12 @@ def scroll_text(
     print(message_matrix)
     pixels = neopixel.NeoPixel(Pin(LED_PIN, Pin.OUT), LED_FIELD)
 
-    #left_pad, right_pad = 2 * (
+    # left_pad, right_pad = 2 * (
     #    numpy.ndarray(numpy.zeros((LED_HEIGHT - 1, LED_WIDTH), dtype=numpy.uint8)),
-    #)
-    #padded_matrix = numpy.concatenate((left_pad, message_matrix, right_pad))
+    # )
+    # padded_matrix = numpy.concatenate((left_pad, message_matrix, right_pad))
     # Reverse the boundaries if scrolling right
-    #boundaries = (0, padded_matrix.shape[1])[::SCROLL_DIRECTION]
+    # boundaries = (0, padded_matrix.shape[1])[::SCROLL_DIRECTION]
     boundaries = (0, message_matrix.shape[1])[::SCROLL_DIRECTION]
     scroll_start, scroll_end = boundaries
 
@@ -223,11 +221,9 @@ def scroll_text(
         b_bound = i + (SCROLL_DIRECTION * LED_WIDTH)
         left_bound = min(a_bound, b_bound)
         right_bound = max(a_bound, b_bound)
-        #display = padded_matrix[:, left_bound:right_bound]
-        display = meessage_matrix[:, left_bound:right_bound]
-        display_pixels = matrix_to_pixel_list(
-            display, foreground=foreground, background=background, serpentine=True
-        )
+        # display = padded_matrix[:, left_bound:right_bound]
+        display = message_matrix[:, left_bound:right_bound]
+        display_pixels = matrix_to_pixel_list(display, foreground=foreground, background=background, serpentine=True)
         pixels[0 : len(display_pixels) - 1] = display_pixels
         pixels.write()
         # add some framerate control that accounts for computation time...
