@@ -148,11 +148,19 @@ class GRB_Pixel:
 
 
 def char_to_matrix(char: chr) -> numpy.ndarray:
+    """all of this because binary_repr is not in ulab numpy!"""
     rows = FONT_MAP[ord(char) - 32]
     # this is the problem section - not being shaped correctly
-    int_to_bin = numpy.vectorize(lambda i: [int(x) for x in "{0:08b}".format(i)])
-    rows_n = numpy.ndarray((7, 8), buffer=(int_to_bin(x) for x in rows))
-    return rows_n
+    # do this suboptimally first
+    rows_padded = ['{0:08}'.format(row) for row in rows] # ensure zero padding.
+    rows_as_one_zero_str = [list(x) for x in rows_padded] # increases dimensionality to 2
+    # I know this is bad, but before I tie myself in a loop with double comprehension, use a for loop
+    rows_as_arrays_of_ints = []
+    for row in rows_as_one_zero_str:
+        rows_as_arrays_of_ints.append(numpy.array([int(x) for x in row], dtype=numpy.uint8))
+
+    char_as_ndarray = numpy.array(rows_as_arrays_of_ints, dtype=numpy.uint8)
+    return char_as_ndarray
 
 
 def string_to_matrix(input: str) -> numpy.array:
