@@ -193,8 +193,7 @@ def matrix_to_pixel_list(
 
     if serpentine:
         new_matrix = matrix_rewrite_serpentine(new_matrix)
-    # to list?
-    ravelled = new_matrix.ravel("F")
+    ravelled = new_matrix.flatten(order="F")
     as_list = ravelled.tolist()[0]
 
     as_pixels = [(background, foreground)[x] for x in as_list]
@@ -210,7 +209,6 @@ def scroll_text(
     framerate: int = 40,
 ):
     message_matrix = string_to_matrix(message)
-    print(message_matrix)
     pixels = neopixel.NeoPixel(Pin(LED_PIN, Pin.OUT), LED_FIELD)
 
     # left_pad, right_pad = 2 * (
