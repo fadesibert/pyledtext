@@ -14,6 +14,7 @@ from machine import Pin, deepsleep
 LEFT = const(1)
 RIGHT = const(-1)
 LED_PIN = const(21)  # Modify this value to change LED Pin. Refer to Pinout Diagram
+LED_INTERNAL_PIN = const(13)
 LED_BRIGHTNESS = const(50)  # value out 100
 LED_BRIGHT_MULT = int(floor((LED_BRIGHTNESS / 255)))
 
@@ -236,7 +237,7 @@ def scroll_text(
 
 
 def wifi_connect() -> None:
-    status_led = Pin(13, Pin.OUT)
+    status_led = Pin(LED_INTERNAL_PIN, Pin.OUT)
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
     status_led.on()
