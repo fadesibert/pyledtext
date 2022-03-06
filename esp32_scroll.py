@@ -1,4 +1,5 @@
 import time
+from ulab import numpy
 from array import array
 from math import floor
 
@@ -6,7 +7,6 @@ import neopixel
 import network
 import uctypes
 from machine import Pin, deepsleep
-from ulab import numpy
 
 # hack when running *nix micropython port
 # const = lambda x: int(x)
@@ -208,15 +208,16 @@ def scroll_text(
     background: GRB_Pixel = GRB_Pixel(0, 0, 0),
     framerate: int = 40,
 ):
-    message_matrix = string_to_matrix(message)
-    pixels = neopixel.NeoPixel(Pin(LED_PIN, Pin.OUT), LED_FIELD)
+    message_matrix: numpy.array = string_to_matrix(message)
+    #pixels: neopixel.NeoPixel = neopixel.NeoPixel(Pin(LED_PIN, Pin.OUT), LED_FIELD)
 
-    # left_pad, right_pad = 2 * (
-    #    numpy.ndarray(numpy.zeros((LED_HEIGHT - 1, LED_WIDTH), dtype=numpy.uint8)),
-    # )
-    # padded_matrix = numpy.concatenate((left_pad, message_matrix, right_pad))
+    left_pad, right_pad = 2 * (
+      numpy.zeros((LED_HEIGHT - 1, LED_WIDTH), dtype=numpy.uint8),
+    )
+
+    padded_matrix = numpy.concatenate((left_pad, message_matrix, right_pad), axis=1)
     # Reverse the boundaries if scrolling right
-    # boundaries = (0, padded_matrix.shape[1])[::SCROLL_DIRECTION]
+    boundaries = (0, padded_matrix.shape[1])[::SCROLL_DIRECTION]
     boundaries = (0, message_matrix.shape[1])[::SCROLL_DIRECTION]
     scroll_start, scroll_end = boundaries
 
@@ -229,8 +230,8 @@ def scroll_text(
         # display = padded_matrix[:, left_bound:right_bound]
         display = message_matrix[:, left_bound:right_bound]
         display_pixels = matrix_to_pixel_list(display, foreground=foreground, background=background, serpentine=True)
-        pixels[0 : len(display_pixels) - 1] = display_pixels
-        pixels.write()
+        #pixels[0 : len(display_pixels) - 1] = display_pixels
+        #pixels.write()
         # add some framerate control that accounts for computation time...
 
 
