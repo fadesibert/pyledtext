@@ -1,20 +1,22 @@
+import gc
 import time
-from ulab import numpy
 from array import array
 from math import floor
+from micropython import mem_info, const
 
 import neopixel
 import network
 import uctypes
 from machine import Pin, deepsleep
+from ulab import numpy
 
 # hack when running *nix micropython port
 # const = lambda x: int(x)
 
 LEFT = const(1)
 RIGHT = const(-1)
-LED_PIN = const(21)  # Modify this value to change LED Pin. Refer to Pinout Diagram
-LED_INTERNAL_PIN = const(13)
+LED_PIN = const(23)  # Modify this value to change LED Pin. Refer to Pinout Diagram
+LED_INTERNAL_PIN = const(2)
 LED_BRIGHTNESS = const(50)  # value out 100
 LED_BRIGHT_MULT = int(floor((LED_BRIGHTNESS / 255)))
 
@@ -25,8 +27,8 @@ LED_FIELD = const(LED_WIDTH * LED_HEIGHT)
 SCROLL_DIRECTION_LEFT = const(1)
 SCROLL_DIRECTION_RIGHT = const(-1)
 
-WIFI_ESSID = "x"
-WIFI_KEY = "x"
+WIFI_ESSID = "Revmo"
+WIFI_KEY = "gr@ph$n0de!"
 
 ENDPOINT_URI = "https://myfancyapi.com/messages/"
 
@@ -36,9 +38,8 @@ SLEEP_TIME = 2 * TIME_MINS_IN_MILLIS
 # Using Consts as Enum not supported in MicroPython
 SCROLL_DIRECTION = SCROLL_DIRECTION_LEFT  # change this using another const
 
-# 2D Arrays not yet supported
 # Once basic functionality established, switch to memoryview, array or const
-FONT_MAP = [
+FONT_MAP = numpy.array([
     [0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0],
     [0x186A0, 0x186A0, 0x186A0, 0x186A0, 0x186A0, 0x0, 0x186A0],
     [0xF6950, 0xF6950, 0xF6950, 0x0, 0x0, 0x0, 0x0],
@@ -135,11 +136,14 @@ FONT_MAP = [
     [0xF4240, 0x186A0, 0x186A0, 0x2710, 0x186A0, 0x186A0, 0xF4240],
     [0x0, 0x0, 0xF4628, 0x9A4430, 0x0, 0x0, 0x0],
     [0x10EFF0, 0xF6950, 0xF6950, 0xF6950, 0xF6950, 0xF6950, 0x10EFF0],
-]
+], dtype=numpy.uint16)
+gc.collect()
 
 
 class GRB_Pixel:
-    def __init__(self, green: uctypes.UINT8 = 0, red: uctypes.UINT8 = 0, blue: uctypes.UINT8 = 0):
+    def __init__(
+        self, green: uctypes.UINT8 = 0, red: uctypes.UINT8 = 0, blue: uctypes.UINT8 = 0
+    ):
         self.green = green
         self.red = red
         self.blue = blue
@@ -153,19 +157,26 @@ def char_to_matrix(char: chr) -> numpy.ndarray:
     rows = FONT_MAP[ord(char) - 32]
     # this is the problem section - not being shaped correctly
     # do this suboptimally first
-    rows_padded = ['{0:08}'.format(row) for row in rows] # ensure zero padding.
-    rows_as_one_zero_str = [list(x) for x in rows_padded] # increases dimensionality to 2
+    rows_padded = ["{0:08}".format(row) for row in rows]  # ensure zero padding.
+    rows_as_one_zero_str = [
+        list(x) for x in rows_padded
+    ]  # increases dimensionality to 2
     # I know this is bad, but before I tie myself in a loop with double comprehension, use a for loop
     rows_as_arrays_of_ints = []
     for row in rows_as_one_zero_str:
-        rows_as_arrays_of_ints.append(numpy.array([int(x) for x in row], dtype=numpy.uint8))
+        rows_as_arrays_of_ints.append(
+            numpy.array([int(x) for x in row], dtype=numpy.uint8)
+        )
 
     char_as_ndarray = numpy.array(rows_as_arrays_of_ints, dtype=numpy.uint8)
+    gc.collect()
     return char_as_ndarray
 
 
 def string_to_matrix(input_: str) -> numpy.array:
-    characters = tuple([char_to_matrix(x) for x in input_]) # now it's an ndarray
+    gc.collect()
+    print(mem_info())
+    characters = tuple([char_to_matrix(x) for x in input_])  # now it's an ndarray
     char_buffer = numpy.concatenate(characters, axis=1)
     return char_buffer
 
@@ -195,7 +206,7 @@ def matrix_to_pixel_list(
     if serpentine:
         new_matrix = matrix_rewrite_serpentine(new_matrix)
     ravelled = new_matrix.flatten(order="F")
-    as_list = ravelled.tolist()[0]
+    as_list = ravelled.tolist()
 
     as_pixels = [(background, foreground)[x] for x in as_list]
 
@@ -210,10 +221,10 @@ def scroll_text(
     framerate: int = 40,
 ):
     message_matrix: numpy.array = string_to_matrix(message)
-    #pixels: neopixel.NeoPixel = neopixel.NeoPixel(Pin(LED_PIN, Pin.OUT), LED_FIELD)
+    pixels: neopixel.NeoPixel = neopixel.NeoPixel(Pin(LED_PIN, Pin.OUT), LED_FIELD)
 
     left_pad, right_pad = 2 * (
-      numpy.zeros((LED_HEIGHT - 1, LED_WIDTH), dtype=numpy.uint8),
+        numpy.zeros((LED_HEIGHT - 1, LED_WIDTH), dtype=numpy.uint8),
     )
 
     padded_matrix = numpy.concatenate((left_pad, message_matrix, right_pad), axis=1)
@@ -230,26 +241,36 @@ def scroll_text(
         right_bound = max(a_bound, b_bound)
         # display = padded_matrix[:, left_bound:right_bound]
         display = message_matrix[:, left_bound:right_bound]
-        display_pixels = matrix_to_pixel_list(display, foreground=foreground, background=background, serpentine=True)
-        #pixels[0 : len(display_pixels) - 1] = display_pixels
-        #pixels.write()
+        display_pixels = matrix_to_pixel_list(
+            display, foreground=foreground, background=background, serpentine=True
+        )
+        # looks like uPy NeoPixel doesn't support slices...
+        # pixels[0 : len(display_pixels) - 1] = display_pixels
+        for i in range(len(display_pixels)):
+            g, r, b = display_pixels[i]
+            pixels[i] = (g, r, b)
+        pixels.write()
         # add some framerate control that accounts for computation time...
 
 
 def wifi_connect() -> None:
     status_led = Pin(LED_INTERNAL_PIN, Pin.OUT)
     wlan = network.WLAN(network.STA_IF)
+    print("setting wifi active")
     wlan.active(True)
     status_led.on()
+    print("attempting wifi connect")
     wlan.connect(WIFI_ESSID, WIFI_KEY)
     while not wlan.isconnected():
         status_led.off()
-        time.sleep(500)
+        time.sleep_ms(500)
         status_led.on()
+        print("wifi still not connected... sleeping")
 
     for _ in range(5):
+        print("wifi connected!")
         status_led.off()
-        time.sleep(100)
+        time.sleep_ms(100)
         status_led.on()
 
 
@@ -260,6 +281,7 @@ def fetch_message() -> str:
 
 def run():
     wifi_connect()
+    gc.collect()
     if message := fetch_message():
         scroll_text(message)
 
