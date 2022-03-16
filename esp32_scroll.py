@@ -184,7 +184,6 @@ def string_to_matrix(input_: str) -> numpy.array:
     return char_buffer
 
 
-# BUG: Writes the whole matrix upside down...
 def matrix_rewrite_serpentine(input_matrix: numpy.ndarray) -> numpy.ndarray:
     #there is a bug in ulab numpy: https://github.com/v923z/micropython-ulab/issues/515
     #input_matrix[:, 1::2] = numpy.flip(input_matrix[:, 1::2], axis=0)
