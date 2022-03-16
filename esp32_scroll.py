@@ -309,10 +309,8 @@ def emulate(pixel_list: listi, emulate_serpentine: bool = False):
             # Skip pixels out of field
             continue
         if emulate_serpentine and (col % 2):
-            print("flip this column")
             field[(LED_HEIGHT-row) - 1][col] = (0,1)[not not pixel_list[i]]
         else:
-            print("no flip")
             field[row][col] = (0,1)[not not pixel_list[i]]
         row += 1
     for row in field:
