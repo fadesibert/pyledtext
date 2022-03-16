@@ -300,21 +300,21 @@ def run():
 def emulate(pixel_list: listi, emulate_serpentine: bool = False):
     field = numpy.zeros((LED_HEIGHT, LED_WIDTH), dtype=numpy.uint8)
     row, col = 0, 0
-    col_reverse = False
     for i in range(LED_FIELD - 1):
         if row == (LED_HEIGHT - 1):
             # End of row
             col += 1
             row = 0
-            if emulate_serpentine and col % 2:
-                field[row][(LED_HEIGHT - col) - 1] = (0,1)[not not pixel_list[i]]
-            else;
-                field[row][col] = (0,1)[not not pixel_list[i]]
-                row += 1
         elif col >= (LED_WIDTH - 1):
             # Skip pixels out of field
             continue
-
+        if emulate_serpentine and (col % 2):
+            print("flip this column")
+            field[(LED_HEIGHT-row) - 1][col] = (0,1)[not not pixel_list[i]]
+        else:
+            print("no flip")
+            field[row][col] = (0,1)[not not pixel_list[i]]
+        row += 1
     for row in field:
         rowlst = row.tolist()
         printable = [(" ","*")[not not x] for x in rowlst]
@@ -327,4 +327,4 @@ if __name__ == "__main__":
     #    time.sleep(5)
     mat = string_to_matrix("Hello friends")
     test_list = matrix_to_pixel_list(mat, serpentine=False)
-    emulate(test_list)
+    emulate(test_list, emulate_serpentine=False)
