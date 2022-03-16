@@ -228,7 +228,8 @@ def scroll_text(
 ):
     message_matrix: numpy.array = string_to_matrix(message)
     pixels: neopixel.NeoPixel = neopixel.NeoPixel(Pin(LED_PIN, Pin.OUT), LED_FIELD)
-
+    pixels.fill((0,0,0))
+    pixels.write()
     left_pad, right_pad = 2 * (
         numpy.zeros((LED_HEIGHT - 1, LED_WIDTH), dtype=numpy.uint8),
     )
@@ -248,7 +249,7 @@ def scroll_text(
         # display = padded_matrix[:, left_bound:right_bound]
         display = message_matrix[:, left_bound:right_bound]
         display_pixels = matrix_to_pixel_list(
-            display, foreground=foreground, background=background, serpentine=True
+            display, foreground=foreground, background=background, serpentine=serpentine
         )
         # looks like uPy NeoPixel doesn't support slices...
         # pixels[0 : len(display_pixels) - 1] = display_pixels
@@ -258,6 +259,15 @@ def scroll_text(
         pixels.write()
         gc.collect()
         # add some framerate control that accounts for computation time...
+
+
+def raw_display(foo: list, offset: int, pixels: neopixel.NeoPixel):
+    for i in range(len(foo)):
+        if foo[i]:
+            pixels[i+offset] = (64,12,12)
+        else:
+            pixels[i+offset] = (0,0,0)
+    pixels.write()
 
 
 def wifi_connect() -> None:
@@ -291,7 +301,9 @@ def run():
     gc.collect()
     if message := fetch_message():
         print(f"printing {message}")
-        scroll_text(message)
+        scroll_text("abc")
+        print("finished scroll 1, clearing")
+        scroll_text("abc", serpentine=False)
         print("Finished printing - going to sleep")
 
 
