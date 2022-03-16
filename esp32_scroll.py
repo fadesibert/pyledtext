@@ -3,10 +3,10 @@ import time
 from array import array
 from math import floor
 
-#import neopixel
-#import network
+import neopixel
+import network
 import uctypes
-#from machine import Pin, deepsleep
+from machine import Pin, deepsleep
 from micropython import const, mem_info
 from ulab import numpy
 # hack when running *nix micropython port
