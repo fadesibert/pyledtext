@@ -189,10 +189,13 @@ def matrix_rewrite_serpentine(input_matrix: numpy.ndarray) -> numpy.ndarray:
     #there is a bug in ulab numpy: https://github.com/v923z/micropython-ulab/issues/515
     #input_matrix[:, 1::2] = numpy.flip(input_matrix[:, 1::2], axis=0)
     out = numpy.zeros(input_matrix.T.shape, dtype=input_matrix.dtype)
+
     # need to iterate over both arrays. Index 0 of Tuple is # of (pre-transpose) columns
+    # i is each Trow (col)
     for i in range(input_matrix.T.shape[0]):
         if not i % 2:
             out[i] = input_matrix.T[i]
+            continue
         out[i] = input_matrix.T[i][::-1]
     return out.T
 
