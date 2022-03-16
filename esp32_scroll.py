@@ -3,15 +3,14 @@ import time
 from array import array
 from math import floor
 
-import neopixel
-import network
+#import neopixel
+#import network
 import uctypes
-from machine import Pin, deepsleep
+#from machine import Pin, deepsleep
 from micropython import const, mem_info
 from ulab import numpy
-
 # hack when running *nix micropython port
-# const = lambda x: int(x)
+const = lambda x: int(x)
 
 LEFT = const(1)
 RIGHT = const(-1)
@@ -156,6 +155,8 @@ class GRB_Pixel:
     def __repr__(self):
         return "G: {}, R: {}, B: {}".format(self.green, self.red, self.blue)
 
+    def __bool__(self) -> bool:
+        return not not self.green
 
 def char_to_matrix(char: chr) -> numpy.ndarray:
     """all of this because binary_repr is not in ulab numpy!"""
@@ -295,7 +296,29 @@ def run():
         print("Finished printing - going to sleep")
 
 
+def emulate(pixel_list: list):
+    field = numpy.zeros((LED_HEIGHT, LED_WIDTH), dtype=numpy.uint8)
+    row, col = 0, 0
+    for i in range(LED_FIELD - 1):
+        if row == (LED_HEIGHT - 1):
+            col += 1
+            row = 0
+        try:
+            field[row][col] = (0,1)[not not pixel_list[i]]
+        except IndexError:
+            print(f"{row=},  {col=} :: E")
+        row += 1
+
+    for row in field:
+        rowlst = row.tolist()
+        printable = [(" ","*")[not not x] for x in rowlst]
+        print("".join(printable))
+
+
 if __name__ == "__main__":
-    while True:
-        run()
-        time.sleep(5)
+    #while True:
+    #    run()
+    #    time.sleep(5)
+    mat = string_to_matrix("Hello")
+    test_list = matrix_to_pixel_list(mat, serpentine=False)
+    emulate(test_list)
