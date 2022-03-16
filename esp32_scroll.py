@@ -153,6 +153,9 @@ class GRB_Pixel:
     def __iter__(self):
         return iter((self.green, self.red, self.blue))
 
+    def __repr__(self):
+        return "G: {}, R: {}, B: {}".format(self.green, self.red, self.blue)
+
 
 def char_to_matrix(char: chr) -> numpy.ndarray:
     """all of this because binary_repr is not in ulab numpy!"""
@@ -181,8 +184,15 @@ def string_to_matrix(input_: str) -> numpy.array:
 
 
 def matrix_rewrite_serpentine(input_matrix: numpy.ndarray) -> numpy.ndarray:
-    input_matrix[:, 1::2] = numpy.flip(input_matrix[:, 1::2], axis=0)
-    return input_matrix
+    #there is a bug in ulab numpy: https://github.com/v923z/micropython-ulab/issues/515
+    #input_matrix[:, 1::2] = numpy.flip(input_matrix[:, 1::2], axis=0)
+    out = numpy.zeros(input_matrix.T.shape, dtype=input_matrix.dtype)
+    # need to iterate over both arrays. Index 0 of Tuple is # of (pre-transpose) columns
+    for i in range(input_matrix.T.shape[0]):
+        if not i % 2:
+            out[i] = input_matrix.T[i]
+        out[i] = input_matrix.T[i][::-1]
+    return out.T
 
 
 def matrix_to_pixel_list(
@@ -246,6 +256,7 @@ def scroll_text(
             g, r, b = display_pixels[i]
             pixels[i] = (g, r, b)
         pixels.write()
+        gc.collect()
         # add some framerate control that accounts for computation time...
 
 
@@ -276,7 +287,7 @@ def fetch_message() -> str:
 
 
 def run():
-    wifi_connect()
+    #wifi_connect()
     gc.collect()
     if message := fetch_message():
         print(f"printing {message}")
@@ -287,4 +298,4 @@ def run():
 if __name__ == "__main__":
     while True:
         run()
-        deepsleep(SLEEP_TIME)
+        time.sleep(5)
