@@ -184,6 +184,7 @@ def string_to_matrix(input_: str) -> numpy.array:
     return char_buffer
 
 
+# BUG: Writes the whole matrix upside down...
 def matrix_rewrite_serpentine(input_matrix: numpy.ndarray) -> numpy.ndarray:
     #there is a bug in ulab numpy: https://github.com/v923z/micropython-ulab/issues/515
     #input_matrix[:, 1::2] = numpy.flip(input_matrix[:, 1::2], axis=0)
@@ -303,6 +304,8 @@ def emulate(pixel_list: list):
         if row == (LED_HEIGHT - 1):
             col += 1
             row = 0
+        elif col >= (LED_WIDTH - 1):
+            continue
         try:
             field[row][col] = (0,1)[not not pixel_list[i]]
         except IndexError:
@@ -319,6 +322,6 @@ if __name__ == "__main__":
     #while True:
     #    run()
     #    time.sleep(5)
-    mat = string_to_matrix("Hello")
+    mat = string_to_matrix("Hello friends")
     test_list = matrix_to_pixel_list(mat, serpentine=False)
     emulate(test_list)
