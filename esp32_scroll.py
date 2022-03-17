@@ -6,6 +6,7 @@ from math import floor
 import neopixel
 import network
 import uctypes
+from urequests import get
 from machine import Pin, deepsleep
 from micropython import const, mem_info
 from ulab import numpy
@@ -181,6 +182,7 @@ def string_to_matrix(input_: str) -> numpy.array:
     gc.collect()
     characters = tuple([char_to_matrix(x) for x in input_])  # now it's an ndarray
     char_buffer = numpy.concatenate(characters, axis=1)
+    print(char_buffer.shape)
     return char_buffer
 
 
@@ -204,13 +206,13 @@ def matrix_to_pixel_list(
     foreground: GRB_Pixel = GRB_Pixel(255, 0, 0),
     background: GRB_Pixel = GRB_Pixel(0, 0, 0),
     serpentine: bool = True,
-    pad_rows: bool = False,  # no, I totally want to do this - but row_stack isn't implemented - will need hand-rolling with some slice-age
+    pad_rows: bool = True,  # no, I totally want to do this - but row_stack isn't implemented - will need hand-rolling with some slice-age
 ) -> list[GRB_Pixel]:
 
     new_matrix = None
     if pad_rows:
         zero_rows = numpy.zeros((pad_rows, matrix.shape[1]), dtype=numpy.uint8)
-        new_matrix = numpy.row_stack((matrix, zero_rows))
+        new_matrix = numpy.concatenate((matrix, zero_rows), axis=0)
 
     else:
         new_matrix = matrix
@@ -296,8 +298,10 @@ def wifi_connect() -> None:
 
 
 def fetch_message() -> str:
-    # FIXME implement appropriate HTTP GET logic
-    return f" {ENDPOINT_URI} Hello, World!"
+    resp = get(ENDPOINT_URI)
+    message = resp.json()["message"]
+    gc.collect()
+    return message
 
 
 def run():
@@ -305,13 +309,11 @@ def run():
     gc.collect()
     if message := fetch_message():
         print(f"printing {message}")
-        scroll_text("abc")
-        print("finished scroll 1, clearing")
-        scroll_text("abc", serpentine=False)
+        scroll_text(message)
         print("Finished printing - going to sleep")
 
 
-def emulate(pixel_list: listi, emulate_serpentine: bool = False):
+def emulate(pixel_list: list, emulate_serpentine: bool = False):
     field = numpy.zeros((LED_HEIGHT, LED_WIDTH), dtype=numpy.uint8)
     row, col = 0, 0
     for i in range(LED_FIELD - 1):
@@ -323,7 +325,7 @@ def emulate(pixel_list: listi, emulate_serpentine: bool = False):
             # Skip pixels out of field
             continue
         if emulate_serpentine and (col % 2):
-            field[(LED_HEIGHT-row) - 1][col] = (0,1)[not not pixel_list[i]]
+            field[(LED_HEIGHT-row) - 1][col] = (0, 1)[not not pixel_list[i]]
         else:
             field[row][col] = (0,1)[not not pixel_list[i]]
         row += 1
@@ -334,9 +336,11 @@ def emulate(pixel_list: listi, emulate_serpentine: bool = False):
 
 
 if __name__ == "__main__":
-    #while True:
-    #    run()
-    #    time.sleep(5)
-    mat = string_to_matrix("Hello friends")
-    test_list = matrix_to_pixel_list(mat, serpentine=False)
-    emulate(test_list, emulate_serpentine=False)
+    while True:
+        run()
+        time.sleep(5)
+    #mat = string_to_matrix("Hello")
+    #test_list = matrix_to_pixel_list(mat, serpentine=True)
+    # emulate(test_list, emulate_serpentine=True)
+    #pixels = neopixel.NeoPixel(Pin(LED_PIN, Pin.OUT), LED_FIELD)
+
